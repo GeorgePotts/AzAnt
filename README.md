@@ -1,9 +1,11 @@
 # AzAnt
-Azure tokenization app to help test migrations from NAnt/AnthillPro projects.
+Azure Ant tokenization test app to validate the config files for project migrations from NAnt/AnthillPro.
 
-By default the app will search for the first `*.csv` file, then using the 'Name' and 'Prod' columns will replace all `__token__` tokens in all `*.token*` files and generate relative output files.
+When migrating from AHP to VSTS/Azure I needed to convert our NAnt config and build scripts into comma separated value (csv) files for importation. To the csv file I added a column for the token name, description, and one for each environment (dev, test, prod, etc). I then created the source web.token.config (or app.) files that would be processed and output to web.config. The result of tokenizing two dozen projects, a half dozen environments, and hundreds of settings resulted in a massive validation effort that had to be conducted through building projects via the website when all of the tokenization wasn't yet complete. Using this app I could quickly test all permutations in my local repository by generating each config file for each environment and diff it against the one already deployed.
 
-The Visual Studio project is configured to publish a single file win-x64 executable to publish\.
+By default the app will search for the first `*.csv` file, then using the 'Name' and 'Prod' columns will replace all `__token__` tokens in all `*.token*` files and generate relative output files. Add 'r' to perform a recursive search.
+
+The Visual Studio 2019 project is configured to publish a single file win-x64 executable to publish\. This was written in c# against .Net Core 3.0.
 
 Searches are case-insensitive.
 
