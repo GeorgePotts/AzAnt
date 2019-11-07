@@ -18,7 +18,17 @@ namespace AzAnt
                 return;
             }
 
-            new AzAnt(Args).Run();
+            try
+            {
+                new AzAnt(Args).Run();
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex) 
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Exiting");
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
     }
 }

@@ -32,84 +32,82 @@ namespace AzAnt
             LogInfo("Copyright Potts Software, 2019\n");
             LogDebug(_Args.GetSettingsString());
 
+            if(_Args.WorkingDir != ".")
+            {
+                LogDebug($"Changing working directory to: {GetFullFileName(_Args.WorkingDir)} ({_Args.WorkingDir})");
+                Directory.SetCurrentDirectory(_Args.WorkingDir);
+            }
+
+            string tokensFile = GetTokensFile();
+            if(tokensFile == null)
+            {
+                LogInfo("No tokens file found. Exiting.");
+                return;
+            }
+            LogInfo("Using tokens input file: " + GetFullFileName(tokensFile));
+
             try
             {
-                if(_Args.WorkingDir != ".")
+                parser = new DelimitedFileParser
                 {
-                    LogDebug($"Changing working directory to: {GetFullFileName(_Args.WorkingDir)} ({_Args.WorkingDir})");
-                    Directory.SetCurrentDirectory(_Args.WorkingDir);
+                    NameField = _Args.NameColumn
+                };
+
+                parser.ParseFile(tokensFile);
+                LogDebug("Available columns: [" + String.Join(" | ", parser.Columns) + "]");
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Failed to parse input file:\n" + ex.Message);
+            }
+
+            var values = parser.GetFieldValues(_Args.Environment);
+            if (_Args.Verbose || _Args.QueryOnly)
+            {
+                LogInfo($"Tokens for environment {_Args.Environment}:");
+                foreach((string Name, string Value) in values)
+                {
+                    LogInfo($"{_Args.Prefix}{Name}{_Args.Postfix} => {Value}");
                 }
 
-                string tokensFile = GetTokensFile();
-                LogInfo("Using tokens input file: " + GetFullFileName(tokensFile));
-
-                try
+                if(_Args.QueryOnly)
                 {
-                    parser = new DelimitedFileParser
-                    {
-                        NameField = _Args.NameColumn
-                    };
-
-                    parser.ParseFile(tokensFile);
-                    LogDebug("Available columns: [" + String.Join(" | ", parser.Columns) + "]");
-                }
-                catch(Exception ex)
-                {
-                    throw new Exception("Failed to parse input file:\n" + ex.Message);
-                }
-
-                var values = parser.GetFieldValues(_Args.Environment);
-                if (_Args.Verbose || _Args.QueryOnly)
-                {
-                    LogInfo($"Tokens for environment {_Args.Environment}:");
-                    foreach((string Name, string Value) in values)
-                    {
-                        LogInfo($"{_Args.Prefix}{Name}{_Args.Postfix} => {Value}");
-                    }
-
-                    if(_Args.QueryOnly)
-                    {
-                        return;
-                    }
-                }
-
-                // For each token file replace all of the tokens and rename it.
-                string[] tokenizedFiles = GetTokenizedFiles();
-
-                LogDebug("TargetFiles found: " + string.Join(", ", tokenizedFiles));
-
-                for(int idx = 0; idx < tokenizedFiles.Length; idx++)
-                {
-                    string tokenizedFile = tokenizedFiles[idx];
-                    string outFile = GetOutputFilename(tokenizedFile);
-
-                    tokenizedFile = GetFullFileName(tokenizedFile);
-                    outFile = GetFullFileName(outFile);
-
-                    LogInfo($"Parsing file [{idx}] {tokenizedFile}");
-                    string contents = File.ReadAllText(tokenizedFile);
-
-                    foreach((string Name, string Value) in values)
-                    {
-                        string name = _Args.Prefix + Name + _Args.Postfix;
-                        contents = contents.Replace(name, Value, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    LogInfo($"Generating file [{idx}] {outFile}:");
-                    if(_Args.WhatIf)
-                    {
-                        LogInfo(contents + "<\n");  // Print a "<" to indicate the end of the file.
-                    }
-                    else
-                    {
-                        File.WriteAllText(outFile, contents);
-                    }
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // For each token file replace all of the tokens and rename it.
+            string[] tokenizedFiles = GetTokenizedFiles();
+
+            LogDebug("TargetFiles found: " + string.Join(", ", tokenizedFiles));
+
+            for(int idx = 0; idx < tokenizedFiles.Length; idx++)
             {
-                LogInfo(ex.Message);
-                throw;
+                string tokenizedFile = tokenizedFiles[idx];
+                string outFile = GetOutputFilename(tokenizedFile);
+
+                tokenizedFile = GetFullFileName(tokenizedFile);
+                outFile = GetFullFileName(outFile);
+
+                LogInfo($"Parsing file [{idx}] {tokenizedFile}");
+                string contents = File.ReadAllText(tokenizedFile);
+
+                foreach((string Name, string Value) in values)
+                {
+                    string name = _Args.Prefix + Name + _Args.Postfix;
+                    //contents = contents.Replace(name, Value, StringComparison.OrdinalIgnoreCase);
+                    contents = contents.Replace(name, Value);
+                }
+
+                LogInfo($"Generating file [{idx}] {outFile}");
+                if(_Args.WhatIf)
+                {
+                    LogInfo(contents + "<\n");  // Print a "<" to indicate the end of the file.
+                }
+                else
+                {
+                    File.WriteAllText(outFile, contents);
+                }
             }
         }
 
@@ -118,7 +116,7 @@ namespace AzAnt
             var files = Directory.EnumerateFiles(".", _Args.VariablesFile).ToArray();
             if (files.Count() == 0)
             {
-                throw new Exception("No input files found. Exiting.");
+                return null;
             }
 
             return files[0];

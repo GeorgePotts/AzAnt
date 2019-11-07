@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
-using Microsoft.VisualBasic.FileIO;
 using System.Linq;
 
 namespace AzAnt
@@ -15,7 +15,7 @@ namespace AzAnt
 
         public delegate void WriteMessage(string message);
 
-        private Dictionary<string, string[]> AllData = new Dictionary<string, string[]>();
+        private readonly Dictionary<string, string[]> AllData = new Dictionary<string, string[]>();
         private int NameIndex = -1;
 
         public bool ParseFile(string filename)

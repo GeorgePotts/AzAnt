@@ -46,9 +46,9 @@
                 "Examples:\n" +
                 $" {name} e:test\n" +
                 $"      The first *.csv will be used to process [a].token[b] into [a].[b] for column 'test'\n" +
-                $" {name} i:tokens.csv t:web.token.config o:web.config e:dev\n" +
+                $" {name} i:tokens.csv t:web.token.config s:web.config e:dev\n" +
                 $"      Tokens.csv column 'dev' will be used to process web.token.config into web.config\n" +
-                $" {name} n:token t:.repl. o:.\n" +
+                $" {name} n:token t:.repl. s:.\n" +
                 $"     The first *.csv will transform [a].repl.[b] into [a].[b] using column name 'token' for values in column 'PROD'\n" +
                 $" {name} q e:test\n" +
                 $"     The token values for environment 'test' will be displayed, then exit with no files written.'\n" +
@@ -108,6 +108,9 @@
                     switch (split[0].ToUpper())
                     {
                         case "H":
+                        case "/?":
+                        case "-H":
+                        case "--H":
                             ret = false;
                             help = true;
                             break;
@@ -145,7 +148,8 @@
             }
 
             // If Postfix wasn't set then default it to the value of Prefix.
-            Postfix ??= Prefix;
+            //Postfix ??= Prefix;
+            Postfix = Postfix ?? Prefix;
 
             return ret;
         }
