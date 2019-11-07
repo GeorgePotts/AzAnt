@@ -145,7 +145,7 @@
             }
 
             // If Postfix wasn't set then default it to the value of Prefix.
-            Postfix = Postfix ?? Prefix;
+            Postfix ??= Prefix;
 
             return ret;
         }

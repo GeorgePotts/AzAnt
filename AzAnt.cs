@@ -6,7 +6,7 @@ namespace AzAnt
 {
     class AzAnt
     {
-        private AzAntArgs _Args = null;
+        private readonly AzAntArgs _Args = null;
         public AzAnt(AzAntArgs args)
         {
             _Args = args;
@@ -27,7 +27,7 @@ namespace AzAnt
 
         public void Run()
         {
-            DelimitedFileParser parser = null;
+            DelimitedFileParser parser;
 
             LogInfo("Copyright Potts Software, 2019\n");
             LogDebug(_Args.GetSettingsString());
@@ -44,9 +44,11 @@ namespace AzAnt
                 LogInfo("Using tokens input file: " + GetFullFileName(tokensFile));
 
                 try
-                { 
-                    parser = new DelimitedFileParser();
-                    parser.NameField = _Args.NameColumn;
+                {
+                    parser = new DelimitedFileParser
+                    {
+                        NameField = _Args.NameColumn
+                    };
 
                     parser.ParseFile(tokensFile);
                     LogDebug("Available columns: [" + String.Join(" | ", parser.Columns) + "]");
@@ -60,9 +62,9 @@ namespace AzAnt
                 if (_Args.Verbose || _Args.QueryOnly)
                 {
                     LogInfo($"Tokens for environment {_Args.Environment}:");
-                    foreach((string Name, string Value) item in values)
+                    foreach((string Name, string Value) in values)
                     {
-                        LogInfo($"{_Args.Prefix}{item.Name}{_Args.Postfix} => {item.Value}");
+                        LogInfo($"{_Args.Prefix}{Name}{_Args.Postfix} => {Value}");
                     }
 
                     if(_Args.QueryOnly)
@@ -87,10 +89,10 @@ namespace AzAnt
                     LogInfo($"Parsing file [{idx}] {tokenizedFile}");
                     string contents = File.ReadAllText(tokenizedFile);
 
-                    foreach((string Name, string Value) item in values)
+                    foreach((string Name, string Value) in values)
                     {
-                        string name = _Args.Prefix + item.Name + _Args.Postfix;
-                        contents = contents.Replace(name, item.Value, StringComparison.OrdinalIgnoreCase);
+                        string name = _Args.Prefix + Name + _Args.Postfix;
+                        contents = contents.Replace(name, Value, StringComparison.OrdinalIgnoreCase);
                     }
 
                     LogInfo($"Generating file [{idx}] {outFile}:");
@@ -107,7 +109,7 @@ namespace AzAnt
             catch (Exception ex)
             {
                 LogInfo(ex.Message);
-                return;
+                throw;
             }
         }
 
