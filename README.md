@@ -5,7 +5,7 @@ When migrating from AHP to VSTS/Azure I needed to convert our NAnt config and bu
 
 By default the app will search for the first `*.csv` file, then using the 'Name' and 'Prod' columns will replace all `__token__` tokens in all `*.token*` files and generate relative output files. Add 'r' to perform a recursive search.
 
-The Visual Studio 2019 project is configured to publish a single file win-x64 executable to publish\. This was written in c# against .Net Core 3.0.
+This Visual Studio 2019 project is targeted to the 4.7.2 framework and relies on Tuples. Targeting an earlier framework may require some minor rewrites to use Tuple<string,string> instead.
 
 Searches are case-insensitive.
 
